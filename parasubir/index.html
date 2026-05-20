@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Compra Exitosa</title>
+
+
+
+ <!-- PWA / App instalable (ícono redondeado) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Escuela">
+    <meta name="theme-color" content="#10b981">
+
+
+
+
+<style>
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+    color: white;
+    text-align: center;
+    padding: 30px;
+}
+
+.box {
+    background: #2f2f2f;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 500px;
+    margin: auto;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* BOTÓN DESCARGA */
+a {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 25px;
+    background: linear-gradient(45deg, #00c853, #00e676);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+a:hover {
+    transform: scale(1.05);
+}
+
+/* FORMULARIO */
+.contact {
+    margin-top: 30px;
+}
+
+.contact h1 {
+    margin-bottom: 15px;
+}
+
+.contact form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* INPUTS */
+.contact input,
+.contact textarea {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background: #444;
+    color: white;
+    transition: 0.3s;
+}
+
+/* EFECTO FOCUS */
+.contact input:focus,
+.contact textarea:focus {
+    background: #555;
+    box-shadow: 0 0 8px #00c3ff;
+}
+
+/* BOTÓN ENVIAR */
+.contact button {
+    background: linear-gradient(45deg, #007BFF, #00c3ff);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.contact button:hover {
+    transform: scale(1.05);
+}
+
+/* MENSAJE */
+.success {
+    margin-top: 10px;
+    color: #00e676;
+    display: none;
+}
+</style>
+
+</head>
+<body>
+
+<div class="box">
+    <h1>🎉 ¡Estás a un paso!</h1>
+
+    <p>Con el usuario y la clave vas a podés usar la versión completa con muchas funcionalidades ( Agenda, exportar los datos, etc):</p>
+
+    <a href="demo.html">Usar la app de prueba</a>
+    <a href="profesor.html">Usar la app</a>
+
+    
+
+
+   <section class="contact" style="max-width:500px; margin:auto; text-align:center;">
+
+  <h1>💳 Enviá tu pago a <br><strong>Alias: ezer-cosmeticos</strong></h1>
+  <h2>AR$ 20.000 cada seis meses; AR$ 10.000 si estás afiliado</h2>
+<small> Renovable cada 6 meses.</small>
+
+  <!-- 👇 VA ACÁ -->
+  <p style="background:#222; padding:10px; border-radius:8px; font-size:0.9em;">
+    📌 Luego de pagar, enviá el siguiente <strong>formulario </strong>para obtener el usuario y la clave.
+  </p>
+
+  <form id="formulario" action="https://formspree.io/f/mbljjekk" method="POST">
+
+    <input type="text" name="nombre" placeholder="Nombre y Apellido" required>
+
+    <input type="email" name="email" placeholder="Correo (te enviamos el usuario y la clave)" required>
+
+    <!-- ID DE PAGO -->
+    <input type="text" name="id_pago" placeholder="Alias" required>
+
+    <!-- LINK OPCIONAL -->
+    <input type="text" name="comprobante" placeholder="Numero de afiliado">
+
+    <textarea name="mensaje" placeholder="Nombre del juego o aplicación" required></textarea>
+
+
+
+
+    <button type="submit">Enviar comprobante</button>
+
+    <div class="success" id="mensajeExito" style="display:none; margin-top:10px; color:#00ff99;">
+      ✅ Gracias.
+    </div>
+
+  </form>
+
+
+
+
+</section>
+
+    <p>Guardá la clave.</p>
+</div>
+
+<script>
+const form = document.getElementById("formulario");
+const mensaje = document.getElementById("mensajeExito");
+
+form.addEventListener("submit", function() {
+    mensaje.style.display = "block";
+});
+
+</script>
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
