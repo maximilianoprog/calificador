@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Demo - Gestión Escolar (1 minuto)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f1f5f9;
+            padding: 20px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 24px;
+            border-radius: 28px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        h1, h2, h3 { color: #10b981; margin-bottom: 16px; font-weight: 600; }
+        input, select, button, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 20px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        button {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { transform: scale(1.02); opacity: 0.9; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .btn-small { padding: 6px 12px; font-size: 12px; width: auto; margin: 2px; border-radius: 40px; }
+        .hidden { display: none !important; }
+        
+        /* Reloj de cuenta regresiva */
+        .timer-container {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50px;
+            margin-bottom: 20px;
+        }
+        .timer-clock {
+            font-size: 48px;
+            font-weight: bold;
+            font-family: monospace;
+            color: #f59e0b;
+            text-shadow: 0 0 10px #f59e0b;
+            letter-spacing: 5px;
+        }
+        .timer-label {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        
+        /* Pantalla de bloqueo */
+        .lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .lock-card {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 32px;
+            text-align: center;
+            max-width: 400px;
+            margin: 20px;
+            border: 2px solid #ef4444;
+        }
+        .lock-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            padding: 10px;
+            border-top: 1px solid #334155;
+            z-index: 100;
+        }
+        .nav-btn {
+            background: none;
+            color: #94a3b8;
+            padding: 8px 12px;
+            margin: 0;
+            width: auto;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 40px;
+            white-space: nowrap;
+        }
+        .nav-btn.active { color: #10b981; background: rgba(16,185,129,0.2); }
+        .tab { display: none; }
+        .tab.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .form-row input, .form-row select, .form-row button { flex: 1; margin: 0; }
+        .scroll-table { overflow-x: auto; border-radius: 16px; margin-top: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background: #0f172a; color: #10b981; font-weight: 600; }
+        .sin-personas { text-align: center; color: #64748b; padding: 40px; font-style: italic; }
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            z-index: 2000;
+            animation: slideIn 0.3s ease, fadeOut 0.5s ease 3s forwards;
+        }
+        .toast-error { background: #ef4444; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        .badge { background: #10b98120; color: #10b981; padding: 4px 12px; border-radius: 40px; font-size: 12px; }
+        .titulo-card { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px; gap: 10px; }
+        
+        .cursos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .curso-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 20px;
+            padding: 18px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .curso-nombre { font-size: 18px; font-weight: bold; color: #10b981; margin-bottom: 6px; }
+        .curso-turno { font-size: 13px; color: #94a3b8; }
+        .nota-input { width: 70px; text-align: center; padding: 8px; margin: 0; border-radius: 12px; }
+        .tabla-notas { min-width: 1800px; }
+    </style>
+</head>
+<body>
+
+<!-- BLOQUEO SI YA SE USÓ EL DEMO -->
+<div id="lockScreen" class="lock-screen hidden">
+    <div class="lock-card">
+        <div class="lock-icon">⏰</div>
+        <h2>Demo Expirada</h2>
+        <p>Esta demo de 1 minuto ya fue utilizada en este dispositivo.</p>
+        <p style="margin-top: 20px; font-size: 14px; color: #94a3b8;">📌 Para acceder a la versión completa, contactá al administrador.</p>
+        <!-- <button id="btnContactar" style="margin-top: 20px;">📧 Contactar</button> -->
+        <button id="btnContactar" onclick="irALaApp()" style="margin-top: 20px; background: linear-gradient(135deg, #10b981, #059669);">🚪 Ir a la App Completa</button>
+    </div>
+</div>
+
+<!-- PANTALLA DE DEMO EXPIRADA DENTRO DE LA APP -->
+<div id="demoExpiredBanner" class="lock-screen hidden">
+    <div class="lock-card">
+        <div class="lock-icon">⏰</div>
+        <h2>⏰ Tiempo agotado</h2>
+        <p>Tu demo de 1 minuto ha finalizado.</p>
+        <p style="margin-top: 20px; font-size: 14px; color: #94a3b8;">📌 Para acceder a la versión completa, contactá al administrador.</p>
+        <!-- <button id="btnContactar2" style="margin-top: 20px;">📧 Contactar</button> -->
+        <button id="btnContactar2" onclick="irALaApp()" style="margin-top: 20px; background: linear-gradient(135deg, #10b981, #059669);">🚪 Ir a la App Completa</button>
+    </div>
+</div>
+
+<!-- APLICACIÓN PRINCIPAL -->
+<div id="appMain">
+    <!-- RELOJ DE CUENTA REGRESIVA -->
+    <div class="container">
+        <div class="timer-container">
+            <div class="timer-clock" id="timerClock">01:00</div>
+            <div class="timer-label">⏱️ Tiempo restante de la demo</div>
+        </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="loginScreen" class="container" style="margin-top: 20px;">
+        <div class="card" style="text-align: center; max-width: 400px; margin: 0 auto;">
+            <h1>🎓 Demo - Calificador docente</h1>
+            <p style="margin-bottom: 20px;">Demo de 1 minuto con el cual podés probar algunas de las funciones de la app completa</p>
+            <input type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+            <input type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password">
+            <button id="btnLogin">🔓 INGRESAR A LA DEMO</button>
+            <p id="loginError" style="color: #ef4444; margin-top: 16px; display: none;"></p>
+            <hr style="margin: 20px 0;">
+            <p style="font-size: 12px;">📌 Usuario de demostración:<br><strong>demo@demo.com / 123456</strong></p>
+        </div>
+    </div>
+
+    <!-- APP PRINCIPAL (se muestra después del login) -->
+    <div id="appScreen" class="hidden">
+        <div class="container">
+            <div class="card">
+                <div class="titulo-card">
+                    <div>
+                        <h2>🎓 Demo - Panel del Profesor</h2>
+                        <p>Bienvenido, <strong id="userNombre"></strong> · <span class="badge" id="userEmail"></span></p>
+                    </div>
+                    <button id="btnLogout" class="btn-danger btn-small">🚪 Salir</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <button class="nav-btn active" data-tab="tabCursos">📚 Cursos</button>
+            <button class="nav-btn" data-tab="tabAlumnos">🎓 Alumnos</button>
+            <button class="nav-btn" data-tab="tabNotas">📝 Notas</button>
+        </div>
+
+        <div class="container">
+            <!-- TAB CURSOS -->
+            <div id="tabCursos" class="tab active">
+                <div class="card">
+                    <h3>➕ Agregar Curso</h3>
+                    <div class="form-row">
+                        <input type="text" id="cursoNombre" placeholder="Nombre (ej: 1° A)">
+                        <select id="cursoTurno">
+                            <option value="Mañana">🌅 Mañana</option>
+                            <option value="Tarde">🌆 Tarde</option>
+                            <option value="Noche">🌙 Noche</option>
+                        </select>
+                    </div>
+                    <div id="cursoEditId" style="display: none;"></div>
+                    <div class="form-row">
+                        <button id="btnGuardarCurso">💾 Guardar</button>
+                        <button id="btnCancelarEdicion" class="btn-warning hidden">❌ Cancelar</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="titulo-card">
+                        <h3>📋 Cursos</h3>
+                        <span class="badge" id="cursoCount">0 cursos</span>
+                    </div>
+                    <div id="listaCursos" class="cursos-grid"></div>
+                </div>
+            </div>
+
+            <!-- TAB ALUMNOS -->
+            <div id="tabAlumnos" class="tab">
+                <div class="card">
+                    <h3>➕ Registrar Alumno</h3>
+                    <div class="form-row">
+                        <input type="text" id="alumnoApellido" placeholder="Apellido">
+                        <input type="text" id="alumnoNombre" placeholder="Nombre">
+                    </div>
+                    <div class="form-row">
+                        <select id="alumnoCurso"><option value="">Seleccionar Curso</option></select>
+                    </div>
+                    <div id="alumnoEditId" style="display: none;"></div>
+                    <div class="form-row">
+                        <button id="btnGuardarAlumno">💾 Guardar</button>
+                        <button id="btnCancelarEdicionAlumno" class="btn-warning hidden">❌ Cancelar</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="titulo-card">
+                        <h3>📋 Alumnos</h3>
+                        <span class="badge" id="alumnoCount">0 alumnos</span>
+                    </div>
+                    <div id="listaAlumnos"></div>
+                </div>
+            </div>
+
+            <!-- TAB NOTAS -->
+            <div id="tabNotas" class="tab">
+                <div class="card">
+                    <h3>📝 Cargar Notas</h3>
+                    <select id="notasCurso"><option value="">Seleccionar Curso</option></select>
+                    <div id="tablaNotasContainer" style="margin-top: 16px; overflow-x: auto;">
+                        <div class="sin-personas">📭 Seleccioná un curso</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBb2EuqTXZIi6_VS5D2H2JCnIzzzpP1Ho0",
+        authDomain: "fir-claseaprender.firebaseapp.com",
+        projectId: "fir-claseaprender",
+        storageBucket: "fir-claseaprender.appspot.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let usuarioActual = null;
+    let timerInterval = null;
+    let tiempoRestante = 60; // 60 segundos
+    let demoUsada = localStorage.getItem("demo_usada") === "true";
+
+    // ========== FUNCIONES DEL DEMO ==========
+    function actualizarReloj() {
+        const minutos = Math.floor(tiempoRestante / 60);
+        const segundos = tiempoRestante % 60;
+        document.getElementById('timerClock').innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+        
+        if (tiempoRestante <= 0) {
+            detenerDemo();
+        }
+    }
+
+    function detenerDemo() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        // Mostrar pantalla de demo expirada
+        document.getElementById('demoExpiredBanner').classList.remove('hidden');
+        // Deshabilitar todos los botones de la app
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.id !== 'btnContactar2' && btn.id !== 'btnContactar') {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        });
+    }
+
+    function iniciarDemo() {
+        if (timerInterval) clearInterval(timerInterval);
+        tiempoRestante = 60;
+        actualizarReloj();
+        timerInterval = setInterval(() => {
+            if (tiempoRestante > 0) {
+                tiempoRestante--;
+                actualizarReloj();
+            } else {
+                detenerDemo();
+            }
+        }, 1000);
+    }
+
+    function marcarDemoComoUsada() {
+        localStorage.setItem("demo_usada", "true");
+        demoUsada = true;
+    }
+
+    // Verificar si ya se usó la demo en este dispositivo
+    if (demoUsada) {
+        document.getElementById('lockScreen').classList.remove('hidden');
+        document.getElementById('appMain').style.display = 'none';
+    }
+
+    // Botones de contacto
+    // document.getElementById('btnContactar').onclick = () => window.location.href = "mailto:admin@tusitio.com";
+    // document.getElementById('btnContactar2').onclick = () => window.location.href = "mailto:admin@tusitio.com";
+
+    function mostrarToast(mensaje, esError = false) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${esError ? 'toast-error' : ''}`;
+        toast.innerHTML = esError ? '❌ ' + mensaje : '✅ ' + mensaje;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // ========== LOGIN ==========
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+        if (demoUsada) {
+            mostrarToast("Esta demo ya fue utilizada en este dispositivo", true);
+            return;
+        }
+        
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPass').value.trim();
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.style.display = 'none';
+        
+        // Usuario demo fijo para simplificar
+        if (email === "demo@demo.com" && password === "123456") {
+            // Usuario demo (no se guarda en Firebase realmente, es local)
+            usuarioActual = { uid: "demo123", email: "demo@demo.com", nombre: "Usuario Demo" };
+            document.getElementById('userNombre').innerText = "Usuario Demo";
+            document.getElementById('userEmail').innerText = "demo@demo.com";
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            
+            // Marcar demo como usada en este dispositivo
+            marcarDemoComoUsada();
+            
+            // Iniciar el reloj de 1 minuto
+            iniciarDemo();
+            
+            // Cargar datos de demo (vacíos)
+            cargarCursosGrid();
+            cargarSelectores();
+            mostrarToast("✅ Demo iniciada - Tenés 1 minuto para probar");
+        } else {
+            errorDiv.innerText = "❌ Usuario demo: demo@demo.com / 123456";
+            errorDiv.style.display = 'block';
+        }
+    });
+
+    document.getElementById('btnLogout').onclick = () => {
+        if (timerInterval) clearInterval(timerInterval);
+        location.reload();
+    };
+
+    // ========== CURSOS (DEMO LOCAL - sin Firebase real) ==========
+    let cursosDemo = [];
+    
+    function cargarCursosGrid() {
+        const container = document.getElementById('listaCursos');
+        document.getElementById('cursoCount').innerText = cursosDemo.length + ' cursos';
+        if (cursosDemo.length === 0) { 
+            container.innerHTML = '<div class="sin-personas">📚 No hay cursos. Creá el primero.</div>'; 
+            return; 
+        }
+        container.innerHTML = '';
+        cursosDemo.forEach((curso, index) => {
+            const turnoIcono = curso.turno === 'Mañana' ? '🌅' : (curso.turno === 'Tarde' ? '🌆' : '🌙');
+            container.innerHTML += `
+                <div class="curso-card">
+                    <div>
+                        <div class="curso-nombre">${escapeHtml(curso.nombre)}</div>
+                        <div class="curso-turno">${turnoIcono} ${escapeHtml(curso.turno)}</div>
+                    </div>
+                    <div>
+                        <button class="btn-editar-curso btn-small btn-info" data-index="${index}">✏️</button>
+                        <button class="btn-eliminar-curso btn-small btn-danger" data-index="${index}">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+        document.querySelectorAll('.btn-editar-curso').forEach(btn => btn.onclick = () => editarCurso(parseInt(btn.dataset.index)));
+        document.querySelectorAll('.btn-eliminar-curso').forEach(btn => btn.onclick = () => eliminarCurso(parseInt(btn.dataset.index)));
+    }
+
+    function editarCurso(index) {
+        const curso = cursosDemo[index];
+        document.getElementById('cursoNombre').value = curso.nombre;
+        document.getElementById('cursoTurno').value = curso.turno;
+        document.getElementById('cursoEditId').innerText = index;
+        document.getElementById('btnCancelarEdicion').classList.remove('hidden');
+        document.getElementById('btnGuardarCurso').innerHTML = "✏️ Actualizar";
+    }
+    
+    function eliminarCurso(index) {
+        if (confirm("¿Eliminar este curso?")) {
+            cursosDemo.splice(index, 1);
+            cargarCursosGrid();
+            cargarSelectores();
+            mostrarToast("Curso eliminado");
+        }
+    }
+    
+    function cancelarEdicionCurso() {
+        document.getElementById('cursoNombre').value = "";
+        document.getElementById('cursoTurno').value = "Mañana";
+        document.getElementById('cursoEditId').innerText = "";
+        document.getElementById('btnCancelarEdicion').classList.add('hidden');
+        document.getElementById('btnGuardarCurso').innerHTML = "💾 Guardar Curso";
+    }
+    
+    document.getElementById('btnGuardarCurso').onclick = () => {
+        const nombre = document.getElementById('cursoNombre').value.trim();
+        const turno = document.getElementById('cursoTurno').value;
+        const editIndex = document.getElementById('cursoEditId').innerText;
+        if (!nombre) return mostrarToast("Ingrese nombre", true);
+        if (editIndex !== "") {
+            cursosDemo[parseInt(editIndex)] = { nombre, turno };
+            mostrarToast("Curso actualizado");
+        } else {
+            cursosDemo.push({ nombre, turno });
+            mostrarToast(`Curso "${nombre}" agregado`);
+        }
+        cancelarEdicionCurso();
+        cargarCursosGrid();
+        cargarSelectores();
+    };
+    document.getElementById('btnCancelarEdicion').onclick = cancelarEdicionCurso;
+
+    // ========== ALUMNOS DEMO ==========
+    let alumnosDemo = [];
+    
+    function cargarAlumnos() {
+        const container = document.getElementById('listaAlumnos');
+        document.getElementById('alumnoCount').innerText = alumnosDemo.length + ' alumnos';
+        if (alumnosDemo.length === 0) { container.innerHTML = '<div class="sin-personas">🎓 No hay alumnos</div>'; return; }
+        
+        const cursosMap = new Map();
+        alumnosDemo.forEach((alumno, idx) => {
+            if (!cursosMap.has(alumno.curso)) cursosMap.set(alumno.curso, []);
+            cursosMap.get(alumno.curso).push({ id: idx, ...alumno });
+        });
+        
+        container.innerHTML = '';
+        for (let [curso, alumnosLista] of cursosMap) {
+            container.innerHTML += `<div style="margin-bottom: 32px;"><h3 style="color:#10b981;margin-bottom:16px;">📚 ${escapeHtml(curso)}</h3><div class="scroll-table"><table><thead><tr><th>Apellido</th><th>Nombre</th><th style="width:100px;">Acciones</th></tr></thead><tbody id="alumnosCurso-${curso.replace(/\s/g, '')}"></tbody></table></div></div>`;
+            const tbody = document.getElementById(`alumnosCurso-${curso.replace(/\s/g, '')}`);
+            alumnosLista.forEach(a => {
+                tbody.innerHTML += `<tr><td><strong>${escapeHtml(a.apellido)}</strong></td><td>${escapeHtml(a.nombre)}</td><td><button class="btn-editar-alumno btn-small btn-info" data-id="${a.id}">✏️</button><button class="btn-eliminar-alumno btn-small btn-danger" data-id="${a.id}">🗑️</button></td></tr>`;
+            });
+        }
+        document.querySelectorAll('.btn-editar-alumno').forEach(btn => btn.onclick = () => editarAlumno(parseInt(btn.dataset.id)));
+        document.querySelectorAll('.btn-eliminar-alumno').forEach(btn => btn.onclick = () => eliminarAlumno(parseInt(btn.dataset.id)));
+    }
+
+    function editarAlumno(id) {
+        const a = alumnosDemo[id];
+        document.getElementById('alumnoApellido').value = a.apellido;
+        document.getElementById('alumnoNombre').value = a.nombre;
+        document.getElementById('alumnoCurso').value = a.curso;
+        document.getElementById('alumnoEditId').innerText = id;
+        document.getElementById('btnCancelarEdicionAlumno').classList.remove('hidden');
+        document.getElementById('btnGuardarAlumno').innerHTML = "✏️ Actualizar";
+    }
+    
+    function eliminarAlumno(id) {
+        if (confirm("¿Eliminar este alumno?")) {
+            alumnosDemo.splice(id, 1);
+            cargarAlumnos();
+            cargarSelectores();
+            mostrarToast("Alumno eliminado");
+        }
+    }
+    
+    function cancelarEdicionAlumno() {
+        document.getElementById('alumnoApellido').value = "";
+        document.getElementById('alumnoNombre').value = "";
+        document.getElementById('alumnoCurso').value = "";
+        document.getElementById('alumnoEditId').innerText = "";
+        document.getElementById('btnCancelarEdicionAlumno').classList.add('hidden');
+        document.getElementById('btnGuardarAlumno').innerHTML = "💾 Guardar Alumno";
+    }
+    
+    document.getElementById('btnGuardarAlumno').onclick = () => {
+        const apellido = document.getElementById('alumnoApellido').value.trim();
+        const nombre = document.getElementById('alumnoNombre').value.trim();
+        const curso = document.getElementById('alumnoCurso').value;
+        const editId = document.getElementById('alumnoEditId').innerText;
+        if (!apellido || !nombre || !curso) return mostrarToast("Complete todos los campos", true);
+        if (editId !== "") {
+            alumnosDemo[parseInt(editId)] = { apellido, nombre, curso, notas: Array(19).fill("") };
+            mostrarToast("Alumno actualizado");
+        } else {
+            alumnosDemo.push({ apellido, nombre, curso, notas: Array(19).fill("") });
+            mostrarToast(`Alumno ${apellido}, ${nombre} agregado`);
+        }
+        cancelarEdicionAlumno();
+        cargarAlumnos();
+        cargarSelectores();
+    };
+    document.getElementById('btnCancelarEdicionAlumno').onclick = cancelarEdicionAlumno;
+
+    // ========== SELECTORES ==========
+    function cargarSelectores() {
+        const selectCurso = document.getElementById('alumnoCurso');
+        const selectNotasCurso = document.getElementById('notasCurso');
+        selectCurso.innerHTML = '<option value="">Seleccionar Curso</option>';
+        selectNotasCurso.innerHTML = '<option value="">Seleccionar Curso</option>';
+        cursosDemo.forEach(curso => {
+            selectCurso.innerHTML += `<option value="${escapeHtml(curso.nombre)}">${escapeHtml(curso.nombre)}</option>`;
+            selectNotasCurso.innerHTML += `<option value="${escapeHtml(curso.nombre)}">${escapeHtml(curso.nombre)}</option>`;
+        });
+        cargarAlumnos();
+    }
+
+    // ========== NOTAS ==========
+    document.getElementById('notasCurso').addEventListener('change', (e) => {
+        const curso = e.target.value;
+        if (!curso) { document.getElementById('tablaNotasContainer').innerHTML = '<div class="sin-personas">📭 Seleccioná un curso</div>'; return; }
+        
+        const alumnosCurso = alumnosDemo.filter(a => a.curso === curso);
+        if (alumnosCurso.length === 0) { document.getElementById('tablaNotasContainer').innerHTML = '<div class="sin-personas">🎓 No hay alumnos</div>'; return; }
+        
+        let html = '<div class="scroll-table"><table class="tabla-notas"><thead><tr><th>Apellido</th><th>Nombre</th>';
+        for (let i = 1; i <= 19; i++) html += `<th>Nota ${i}</th>`;
+        html += '</tr></thead><tbody id="notasBody"></tbody></table></div>';
+        document.getElementById('tablaNotasContainer').innerHTML = html;
+        
+        const tbody = document.getElementById('notasBody');
+        alumnosCurso.forEach((alumno, idx) => {
+            const notas = alumno.notas || Array(19).fill("");
+            let row = `<tr><td><strong>${escapeHtml(alumno.apellido)}</strong></td><td>${escapeHtml(alumno.nombre)}</td>`;
+            for (let i = 0; i < 19; i++) {
+                row += `<td><input type="text" class="nota-input" data-alumno-idx="${idx}" data-curso="${curso}" data-pos="${i}" value="${escapeHtml(notas[i] || '')}" placeholder="Nota ${i+1}" style="width:70px;text-align:center"></td>`;
+            }
+            row += '</tr>';
+            tbody.innerHTML += row;
+        });
+        
+        document.querySelectorAll('.nota-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const alumnoIdx = parseInt(input.dataset.alumnoIdx);
+                const pos = parseInt(input.dataset.pos);
+                const valor = input.value;
+                const cursoNota = input.dataset.curso;
+                const alumnoIndex = alumnosDemo.findIndex(a => a.curso === cursoNota);
+                if (alumnoIndex !== -1 && alumnosDemo[alumnoIdx]) {
+                    if (!alumnosDemo[alumnoIdx].notas) alumnosDemo[alumnoIdx].notas = Array(19).fill("");
+                    alumnosDemo[alumnoIdx].notas[pos] = valor;
+                    mostrarToast(`✅ Nota ${pos+1} guardada`);
+                }
+            });
+        });
+    });
+
+    // ========== NAVEGACIÓN ==========
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+            if (btn.dataset.tab === 'tabNotas') cargarSelectores();
+        };
+    });
+
+    function escapeHtml(str) { if (!str) return ""; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+    function irALaApp() {
+    window.location.href = "index.html";
+} 
+
+</script>
+</body>
+</html>
